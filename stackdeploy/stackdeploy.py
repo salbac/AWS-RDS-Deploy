@@ -1,4 +1,5 @@
 import sys
+import random
 
 import boto3
 import botocore.exceptions
@@ -123,7 +124,7 @@ class StackDeploy(object):
         availabilityzone = []
         for res in response['DBSubnetGroups'][0]['Subnets']:
             availabilityzone.append(res['SubnetAvailabilityZone']['Name'])
-        return availabilityzone
+        return random.choice(availabilityzone)
 
     def get_rds_engines(self):
         versions = []

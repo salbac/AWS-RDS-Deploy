@@ -114,7 +114,7 @@ class Cli(object):
                 'name': 'master_username',
                 'message': 'What is the master username?',
                 'validate': validator.MasterUsernameValidator,
-                'default': 'admin'
+                'default': 'root'
             },
             {
                 'type': 'password',

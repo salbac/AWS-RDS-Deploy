@@ -4,10 +4,16 @@ import os
 from cli.cli import Cli
 from stackdeploy.stackdeploy import StackDeploy
 
-DEBUG = os.environ['DEBUG']
-TOKEN = os.environ['AWS_TOKEN']
-ACCESS_KEY = os.environ['AWS_ACCESS_KEY']
-SECRET_KEY = os.environ['AWS_SECRET_KEY']
+try:
+    DEBUG = os.environ['DEBUG']
+    TOKEN = os.environ['AWS_TOKEN']
+    ACCESS_KEY = os.environ['AWS_ACCESS_KEY']
+    SECRET_KEY = os.environ['AWS_SECRET_KEY']
+except:
+    DEBUG = False
+    TOKEN = None
+    ACCESS_KEY = None
+    SECRET_KEY = None
 
 if __name__ == "__main__":
 
