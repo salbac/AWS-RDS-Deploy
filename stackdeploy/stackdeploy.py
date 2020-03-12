@@ -140,7 +140,6 @@ class StackDeploy(object):
             if e['Engine'] == engine['engine_type'] and e['Version'] == version['engine_version']:
                 return e['ParameterGroupFamily']
 
-
     def rds_instance_is_available(self):
         waiter = self.rds.get_waiter('db_instance_available')
         try:
@@ -192,7 +191,6 @@ class StackDeploy(object):
             ],
             # AvailabilityZone='string',
             # PreferredMaintenanceWindow='string',
-            # TODO create previous parameter group
             DBParameterGroupName=data['DBParameterGroupName'],
             BackupRetentionPeriod=7,
             # PreferredBackupWindow='string',
