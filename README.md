@@ -25,7 +25,7 @@ unzip master.zip
 
 Install requirements.
 ````shell script
-cd AWS-RDS-Deploy-master
+cd AWS_RDS_Deploy_master
 pip install -r requirements.txt
 ````
 
@@ -39,7 +39,7 @@ Possibly the permissions could be limited more, but these were the permissions w
 ## How to use
 In the command line inside the downloaded folder execute:
 ```shell script
-python3 aws-rds-deploy.py
+python3 aws_rds_deploy.py
 ```
 And response all questions prompted by the wizard.
 

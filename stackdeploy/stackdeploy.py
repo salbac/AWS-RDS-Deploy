@@ -1,4 +1,5 @@
 import sys
+import random
 
 import boto3
 import botocore.exceptions
@@ -123,7 +124,7 @@ class StackDeploy(object):
         availabilityzone = []
         for res in response['DBSubnetGroups'][0]['Subnets']:
             availabilityzone.append(res['SubnetAvailabilityZone']['Name'])
-        return availabilityzone
+        return random.choice(availabilityzone)
 
     def get_rds_engines(self):
         versions = []
@@ -200,6 +201,20 @@ class StackDeploy(object):
         )
         if new_parameter_group['ResponseMetadata']['HTTPStatusCode'] == 200:
             print("[*] Creating parameter group")
+
+    def get_rds_parameter_groups(self):
+        pgs = []
+        rds_parameters = self.rds.describe_db_parameter_groups()
+        for pg in rds_parameters['DBParameterGroups']:
+            pgs.append(pg['DBParameterGroupName'])
+        return pgs
+
+    def get_rds_instance_name(self):
+        ins_names = []
+        instances = self.rds.describe_db_instances()
+        for instance in instances['DBInstances']:
+            ins_names.append(instance['DBInstanceIdentifier'])
+        return ins_names
 
     def modify_parameter(self, parameter_group, data):
         for key in data.keys():

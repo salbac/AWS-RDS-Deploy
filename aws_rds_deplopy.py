@@ -1,13 +1,20 @@
 #!/usr/bin/env python3
-
 import os
 from cli.cli import Cli
 from stackdeploy.stackdeploy import StackDeploy
 
-DEBUG = os.environ['DEBUG']
-TOKEN = os.environ['AWS_TOKEN']
-ACCESS_KEY = os.environ['AWS_ACCESS_KEY']
-SECRET_KEY = os.environ['AWS_SECRET_KEY']
+
+try:
+    DEBUG = os.environ['DEBUG']
+    TOKEN = os.environ['AWS_TOKEN']
+    ACCESS_KEY = os.environ['AWS_ACCESS_KEY']
+    SECRET_KEY = os.environ['AWS_SECRET_KEY']
+except:
+    DEBUG = False
+    TOKEN = None
+    ACCESS_KEY = None
+    SECRET_KEY = None
+
 
 if __name__ == "__main__":
 
@@ -42,8 +49,22 @@ if __name__ == "__main__":
     # Set up EC2 and RDS client in sd object
     sd.aws_client(aws_auth['auth_type'])
 
+    # Ask for RDS Instance name
+    verified_name = False
+    while not verified_name:
+        rds_instance_names = sd.get_rds_instance_name()
+        instance_name = cli.ask_for_rds_instance_name()
+        if instance_name['rds_instance_name'] not in rds_instance_names:
+            verified_name = True
+        else:
+            print('[*] {} alredy exist'.format(instance_name['rds_instance_name']))
+
+
+
     # Ask for RDS information
     rds_data = cli.ask_for_rds_data()
+
+    # ADK for storage
     storage = cli.ask_for_storage()
 
     # Select engine version
@@ -92,16 +113,23 @@ if __name__ == "__main__":
     # Charset
     charset = cli.ask_for_charset()
 
+    # Set parameter group name
+    verified_pg = False
+    while not verified_pg:
+        rds_parameter_groups = sd.get_rds_parameter_groups()
+        parameter_group = cli.ask_for_parameter_group_name()
+        if parameter_group['parameter_group_name'] not in rds_parameter_groups:
+            verified_pg = True
+        else:
+            print('[*] {} alredy exist'.format(parameter_group['parameter_group_name']))
+
     # Ask for archive_lag_target value
     archive_lag_target = cli.ask_for_archive_lag_target_configuration()
-
-    # Set parameter group name
-    parameter_group = '{}-parameter-group'.format(rds_data['rds_instance_name'])
 
     # Config data
     config_data = {
         'DBName': rds_data['sid'],
-        'DBInstanceIdentifier': rds_data['rds_instance_name'],
+        'DBInstanceIdentifier': instance_name['rds_instance_name'],
         'AllocatedStorage': int(storage['storage_size']),
         'DBInstanceClass': instance_type['instance_type'],
         'Engine': engine_version['engine_type'],
@@ -112,7 +140,7 @@ if __name__ == "__main__":
         'MultiAZ': bool(multi_az['multi_az']),
         'EngineVersion': minor_version['engine_version'],
         'LicenseModel': license_model['license'],
-        'DBParameterGroupName': parameter_group,
+        'DBParameterGroupName': parameter_group['parameter_group_name'],
         'DBSubnetGroupName': dbsg['dbsg'],
         'AvailabilityZone': az,
         'CharacterSetName': charset['charset'],
@@ -134,10 +162,10 @@ if __name__ == "__main__":
     if bool(confirmation['confirmation']):
         # Parameter group
         parameter_group_family = sd.get_rds_parameter_group_family(engines, engine_version, minor_version)
-        sd.create_rds_parameter_group(parameter_group, rds_data['rds_instance_name'], parameter_group_family)
+        sd.create_rds_parameter_group(parameter_group['parameter_group_name'], instance_name['rds_instance_name'], parameter_group_family)
 
         # Configure archive_lag_target
-        sd.modify_parameter(parameter_group, archive_lag_target)
+        sd.modify_parameter(parameter_group['parameter_group_name'], archive_lag_target)
 
         # Create instance
         sd.create_rds_instance(config_data)

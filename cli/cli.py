@@ -19,6 +19,7 @@ class Cli(object):
                         'name': 'AWS Token'
                     }
                 ],
+                'validate': validator.EmptyValidator
             },
             {
                 'type': 'password',
@@ -52,6 +53,7 @@ class Cli(object):
                 'name': 'region',
                 'message': 'Select AWS region:',
                 'choices': regions,
+                'validate': validator.EmptyValidator
             }
         ]
 
@@ -65,6 +67,7 @@ class Cli(object):
                 'name': 'vpc',
                 'message': 'Select AWS VPC:',
                 'choices': vpcs,
+                'validate': validator.EmptyValidator
             }
         ]
         answers = prompt(questions)
@@ -77,6 +80,7 @@ class Cli(object):
                 'name': 'sg',
                 'message': 'Select AWS security group:',
                 'choices': sgs,
+                'validate': validator.EmptyValidator
             }
         ]
         answers = prompt(questions)
@@ -89,6 +93,19 @@ class Cli(object):
                 'name': 'dbsg',
                 'message': 'Select AWS DB subnet group:',
                 'choices': dbsg,
+                'validate': validator.EmptyValidator
+            }
+        ]
+        answers = prompt(questions)
+        return answers
+
+    def ask_for_rds_instance_name(self):
+        questions = [
+            {
+                'type': 'input',
+                'name': 'rds_instance_name',
+                'message': 'What name do you want to guive to the RDS instance?',
+                'validate': validator.RdsInstanceNameValidator
             }
         ]
         answers = prompt(questions)
@@ -96,12 +113,6 @@ class Cli(object):
 
     def ask_for_rds_data(self):
         questions = [
-            {
-                'type': 'input',
-                'name': 'rds_instance_name',
-                'message': 'What name do you want to guive to the RDS instance?',
-                'validate': validator.RdsInstanceNameValidator
-            },
             {
                 'type': 'input',
                 'name': 'sid',
@@ -114,7 +125,7 @@ class Cli(object):
                 'name': 'master_username',
                 'message': 'What is the master username?',
                 'validate': validator.MasterUsernameValidator,
-                'default': 'admin'
+                'default': 'root'
             },
             {
                 'type': 'password',
@@ -156,6 +167,7 @@ class Cli(object):
                         'name': '300',
                     },
                 ],
+                'validate': validator.EmptyValidator
             },
         ]
         answers = prompt(questions)
@@ -184,6 +196,7 @@ class Cli(object):
                         'value': 'standard'
                     }
                 ],
+                'validate': validator.EmptyValidator
             },
             {
                 'type': 'input',
@@ -209,6 +222,7 @@ class Cli(object):
                 'name': 'engine_type',
                 'message': 'Select engine type:',
                 'choices': engines,
+                'validate': validator.EmptyValidator
             },
         ]
         answers = prompt(questions)
@@ -221,6 +235,7 @@ class Cli(object):
                 'name': 'engine_version',
                 'message': 'Select engine version:',
                 'choices': engines,
+                'validate': validator.EmptyValidator
             },
         ]
         answers = prompt(questions)
@@ -233,6 +248,7 @@ class Cli(object):
                 'name': 'instance_type',
                 'message': 'Select instance type:',
                 'choices': instance_types,
+                'validate': validator.EmptyValidator
             },
         ]
         answers = prompt(questions)
@@ -255,6 +271,7 @@ class Cli(object):
                         'name': 'general-public-license',
                     }
                 ],
+                'validate': validator.EmptyValidator
             },
         ]
         answers = prompt(questions)
@@ -295,6 +312,19 @@ class Cli(object):
                 'name': 'charset',
                 'message': 'Select database charset:',
                 'choices': res,
+                'validate': validator.EmptyValidator
+            },
+        ]
+        answers = prompt(questions)
+        return answers
+
+    def ask_for_parameter_group_name(self):
+        questions = [
+            {
+                'type': 'input',
+                'name': 'parameter_group_name',
+                'message': 'What is the name of new parameter group?',
+                'validate': validator.EmptyValidator
             },
         ]
         answers = prompt(questions)
