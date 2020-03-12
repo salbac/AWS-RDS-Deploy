@@ -94,6 +94,15 @@ class StackDeploy(object):
             print('[*] Please review your subnet configuration for Vpc-Id {}'.format(vpc))
             sys.exit(1)
 
+    def get_az_from_db_subnet_group(self, dbsname):
+        response = self.rds.describe_db_subnet_groups(
+            DBSubnetGroupName=dbsname
+        )
+        availabilityzone = []
+        for res in response['DBSubnetGroups'][0]['Subnets']:
+            availabilityzone.append(res['SubnetAvailabilityZone']['Name'])
+        return availabilityzone
+
 
     def get_rds_engines(self):
         versions = []
@@ -189,7 +198,7 @@ class StackDeploy(object):
             VpcSecurityGroupIds=[
                 data['VpcSecurityGroupIds'],
             ],
-            # AvailabilityZone='string',
+            AvailabilityZone=data['AvailabilityZone'],
             # PreferredMaintenanceWindow='string',
             DBParameterGroupName=data['DBParameterGroupName'],
             BackupRetentionPeriod=7,
@@ -272,11 +281,12 @@ class StackDeploy(object):
             region_list.append({'name': region['RegionName']})
         return region_list
 
-    def create_db_security_group(self, name):
-        new_sg = self.rds.create_db_security_group(
-            DBSecurityGroupName='sg-{}'.format(name),
-            DBSecurityGroupDescription='SG for instance {}.'.format(name)
-        )
-        if new_sg['ResponseMetadata']['HTTPStatusCode'] == 200:
-            print("[*] Creating new DB security group")
-        return new_sg['DBSecurityGroup']['DBSecurityGroupName']
+    # # Not implemented
+    # def create_db_security_group(self, name):
+    #     new_sg = self.rds.create_db_security_group(
+    #         DBSecurityGroupName='sg-{}'.format(name),
+    #         DBSecurityGroupDescription='SG for instance {}.'.format(name)
+    #     )
+    #     if new_sg['ResponseMetadata']['HTTPStatusCode'] == 200:
+    #         print("[*] Creating new DB security group")
+    #     return new_sg['DBSecurityGroup']['DBSecurityGroupName']

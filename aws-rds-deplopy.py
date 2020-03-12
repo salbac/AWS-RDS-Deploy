@@ -73,6 +73,9 @@ if __name__ == "__main__":
         dbsgs = sd.create_db_subnet_group(vpcid, engine_version['engine_type'])
     dbsg = cli.ask_for_db_subnet_group(dbsgs)
 
+    # Get available AZ for DB subnet group
+    az = sd.get_az_from_db_subnet_group(dbsg['dbsg'])
+
     # Select license mode
     license_model = cli.ask_for_license_model()
 
@@ -111,12 +114,14 @@ if __name__ == "__main__":
         'LicenseModel': license_model['license'],
         'DBParameterGroupName': parameter_group,
         'DBSubnetGroupName': dbsg['dbsg'],
-        # 'OptionGroupName': parameter_group,
+        'AvailabilityZone': az,
         'CharacterSetName': charset['charset'],
         'PubliclyAccessible': bool(public_accesible['public_accessible']),
         'StorageType': storage['storage_type'],
         'StorageEncrypted': storage['storage_encrypte'],
     }
+
+    # Configuration review
     print("""
     ########################
     # Configuration review #
@@ -125,15 +130,15 @@ if __name__ == "__main__":
     for key in config_data.keys():
         print('{0:25}  {1}'.format(key, config_data[key]))
     confirmation = cli.ask_for_confirmation()
+
     if bool(confirmation['confirmation']):
         # Parameter group
         parameter_group_family = sd.get_rds_parameter_group_family(engines, engine_version, minor_version)
         sd.create_rds_parameter_group(parameter_group, rds_data['rds_instance_name'], parameter_group_family)
 
-        # # Create DB SG
-        # db_sg = sd.create_db_sg(rds_data['rds_instance_name'])
         # Configure archive_lag_target
         sd.modify_parameter(parameter_group, archive_lag_target)
+
         # Create instance
         sd.create_rds_instance(config_data)
         sd.rds_instance_is_available()
