@@ -1,6 +1,7 @@
+import sys
+
 import boto3
 import botocore.exceptions
-import sys
 
 # TODO Configure acces for specific IP restriction with sg
 # TODO Unit Test and coverage
@@ -17,25 +18,46 @@ class StackDeploy(object):
 
     def aws_client(self, auth_type):
         if auth_type == 'AWS Token':
-            self.ec2 = boto3.client('ec2',
-                                    aws_session_token=self.aws_token,
-                                    region_name=self.aws_region,
-                                    )
-            self.rds = boto3.client('rds',
-                                    aws_session_token=self.aws_token,
-                                    region_name=self.aws_region,
-                                    )
+            try:
+                self.ec2 = boto3.client('ec2',
+                                        aws_session_token=self.aws_token,
+                                        region_name=self.aws_region,
+                                        )
+                self.ec2.describe_account_attributes()
+            except botocore.exceptions.ClientError as err:
+                print('[*] {}'.format(err))
+                sys.exit(1)
+            try:
+                self.rds = boto3.client('rds',
+                                        aws_session_token=self.aws_token,
+                                        region_name=self.aws_region,
+                                        )
+                self.rds.describe_account_attributes()
+            except botocore.exceptions.ClientError as err:
+                print('[*] {}'.format(err))
+                sys.exit(1)
+
         elif auth_type == 'AWS Key':
-            self.ec2 = boto3.client('ec2',
-                                    aws_access_key_id=self.aws_acces,
-                                    aws_secret_access_key=self.aws_secret,
-                                    region_name=self.aws_region,
-                                    )
-            self.rds = boto3.client('rds',
-                                    aws_access_key_id=self.aws_acces,
-                                    aws_secret_access_key=self.aws_secret,
-                                    region_name=self.aws_region,
-                                    )
+            try:
+                self.ec2 = boto3.client('ec2',
+                                        aws_access_key_id=self.aws_acces,
+                                        aws_secret_access_key=self.aws_secret,
+                                        region_name=self.aws_region,
+                                        )
+                self.ec2.describe_account_attributes()
+            except botocore.exceptions.ClientError as err:
+                print('[*] {}'.format(err))
+                sys.exit(1)
+            try:
+                self.rds = boto3.client('rds',
+                                        aws_access_key_id=self.aws_acces,
+                                        aws_secret_access_key=self.aws_secret,
+                                        region_name=self.aws_region,
+                                        )
+                self.rds.describe_account_attributes()
+            except botocore.exceptions.ClientError as err:
+                print('[*] {}'.format(err))
+                sys.exit(1)
 
     def get_vpcs(self):
         v = []
@@ -94,18 +116,36 @@ class StackDeploy(object):
             print('[*] Please review your subnet configuration for Vpc-Id {}'.format(vpc))
             sys.exit(1)
 
+    def get_az_from_db_subnet_group(self, dbsname):
+        response = self.rds.describe_db_subnet_groups(
+            DBSubnetGroupName=dbsname
+        )
+        availabilityzone = []
+        for res in response['DBSubnetGroups'][0]['Subnets']:
+            availabilityzone.append(res['SubnetAvailabilityZone']['Name'])
+        return availabilityzone
 
     def get_rds_engines(self):
         versions = []
         if self.auth_type == 'AWS Token':
-            client = boto3.client('rds',
-                                  aws_session_token=self.aws_token,
-                                  )
+            try:
+                client = boto3.client('rds',
+                                      aws_session_token=self.aws_token,
+                                      )
+                client.describe_account_attributes()
+            except botocore.exceptions.ClientError as err:
+                print('[*] {}'.format(err))
+                sys.exit(1)
         elif self.auth_type == 'AWS Key':
-            client = boto3.client('rds',
-                                  aws_access_key_id=self.aws_acces,
-                                  aws_secret_access_key=self.aws_secret,
-                                  )
+            try:
+                client = boto3.client('rds',
+                                      aws_access_key_id=self.aws_acces,
+                                      aws_secret_access_key=self.aws_secret,
+                                      )
+                client.describe_account_attributes()
+            except botocore.exceptions.ClientError as err:
+                print('[*] {}'.format(err))
+                sys.exit(1)
         paginator = client.get_paginator('describe_db_engine_versions')
         pages = paginator.paginate()
         for page in pages:
@@ -189,7 +229,7 @@ class StackDeploy(object):
             VpcSecurityGroupIds=[
                 data['VpcSecurityGroupIds'],
             ],
-            # AvailabilityZone='string',
+            AvailabilityZone=data['AvailabilityZone'],
             # PreferredMaintenanceWindow='string',
             DBParameterGroupName=data['DBParameterGroupName'],
             BackupRetentionPeriod=7,
@@ -242,7 +282,8 @@ class StackDeploy(object):
             print("[*] Creating instance")
 
     def get_instance_types(self):
-        allowed_family = ['db.m5.', 'db.m4.', 'db.m3.', 'db.m1.', 'db.z1d.', 'db.x1e.', 'db.x1.', 'db.r5.', 'db.r4.', 'db.r3.', 'db.m2.', 'db.t3.', 'db.t2.']
+        allowed_family = ['db.m5.', 'db.m4.', 'db.m3.', 'db.m1.', 'db.z1d.', 'db.x1e.', 'db.x1.', 'db.r5.', 'db.r4.',
+                          'db.r3.', 'db.m2.', 'db.t3.', 'db.t2.']
         paginator = self.ec2.get_paginator('describe_instance_types')
         pages = paginator.paginate()
         instances = []
@@ -259,24 +300,35 @@ class StackDeploy(object):
     def get_regions(self):
         region_list = []
         if self.auth_type == 'AWS Token':
-            client = boto3.client('ec2',
-                                    aws_session_token=self.aws_token,
-                                    )
+            try:
+                client = boto3.client('ec2',
+                                      aws_session_token=self.aws_token,
+                                      )
+                client.describe_account_attributes()
+            except botocore.exceptions.ClientError as err:
+                print('[*] {}'.format(err))
+                sys.exit(1)
         elif self.auth_type == 'AWS Key':
-            client = boto3.client('ec2',
-                                    aws_access_key_id=self.aws_acces,
-                                    aws_secret_access_key=self.aws_secret,
-                                    )
+            try:
+                client = boto3.client('ec2',
+                                      aws_access_key_id=self.aws_acces,
+                                      aws_secret_access_key=self.aws_secret,
+                                      )
+                client.describe_account_attributes()
+            except botocore.exceptions.ClientError as err:
+                print('[*] {}'.format(err))
+                sys.exit(1)
         regions = client.describe_regions()
         for region in regions['Regions']:
             region_list.append({'name': region['RegionName']})
         return region_list
 
-    def create_db_security_group(self, name):
-        new_sg = self.rds.create_db_security_group(
-            DBSecurityGroupName='sg-{}'.format(name),
-            DBSecurityGroupDescription='SG for instance {}.'.format(name)
-        )
-        if new_sg['ResponseMetadata']['HTTPStatusCode'] == 200:
-            print("[*] Creating new DB security group")
-        return new_sg['DBSecurityGroup']['DBSecurityGroupName']
+    # # Not implemented
+    # def create_db_security_group(self, name):
+    #     new_sg = self.rds.create_db_security_group(
+    #         DBSecurityGroupName='sg-{}'.format(name),
+    #         DBSecurityGroupDescription='SG for instance {}.'.format(name)
+    #     )
+    #     if new_sg['ResponseMetadata']['HTTPStatusCode'] == 200:
+    #         print("[*] Creating new DB security group")
+    #     return new_sg['DBSecurityGroup']['DBSecurityGroupName']
