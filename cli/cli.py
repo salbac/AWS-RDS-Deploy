@@ -13,10 +13,10 @@ class Cli(object):
                 'name': 'auth_type',
                 'choices': [
                     {
-                        'name': 'AWS Token'
+                        'name': 'AWS Key'
                     },
                     {
-                        'name': 'AWS Key'
+                        'name': 'AWS Token'
                     }
                 ],
             },
