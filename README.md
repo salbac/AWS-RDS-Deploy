@@ -1,13 +1,13 @@
-# AWS-RDS-Deploy
-The following script is designed for ask the necessary questions to the user for automating deploy new RDS instance in selected AWS account.
+# AWS RDS Deploy Tool
+With this tool you can deploy new RDS instance in your AWS account.
 
+Runed in interactive mode doing questions to the user and guide him for complete the process.
+
+## Limitations
 At this moment only support Oracle engine
 
 ## Script setup
-The Python version requested by the script is 3.7.6 and only support the following operatin systems:
-* MacOSX
-* Linux
-* Unix
+The tool was developed using Python 3.7.6 in OSX.
 
 This script is based in two non-standard Python libraries.
 
@@ -42,4 +42,12 @@ In the command line inside the downloaded folder execute:
 python3 aws_rds_deploy.py
 ```
 And response all questions prompted by the wizard.
+
+## TODOs
+* Unit Tests
+* Configure backups in instance
+* Configure Performance Insights
+* Unlock all engines
+* Restrict acces with Security Group
+
 
